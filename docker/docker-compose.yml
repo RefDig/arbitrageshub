@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: builderlys
+      MYSQL_USER: builderlys
+      MYSQL_PASSWORD: dbpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  api:
+    build: ../apps/api
+    restart: always
+    environment:
+      DATABASE_URL: mysql://builderlys:dbpassword@mysql:3306/builderlys
+      JWT_SECRET: un_secret
+      STRIPE_SECRET: sk_test_xxx
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mysql
+
+  web:
+    build: ../apps/web
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  db_data:
